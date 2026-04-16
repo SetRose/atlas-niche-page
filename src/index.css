@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@source "..";
+
+:root {
+  --bg-page: #0F1117;
+  --bg-card: #161B22;
+  --bg-dropdown: #1C2333;
+  --border-default: rgba(255,255,255, 0.08);
+  --border-hover: rgba(255,255,255, 0.15);
+  --accent: #4F46E5;
+  --accent-hover: #818CF8;
+  --text-primary: rgba(255,255,255, 0.87);
+  --text-secondary: rgba(255,255,255, 0.60);
+  --text-muted: rgba(255,255,255, 0.40);
+  --verdict-high: #818CF8;
+  --verdict-promising: #60A5FA;
+  --verdict-moderate: #94A3B8;
+  --verdict-concerning: #FBBF24;
+  --verdict-risky: #F97316;
+  --trend-up: #34D399;
+  --trend-down: #F87171;
+  --reg-green: #10B981;
+  --reg-red: #EF4444;
+
+  font-family: 'Onest', system-ui, sans-serif;
+  color-scheme: dark;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  min-width: 360px;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.font-num {
+  font-family: 'Inter', monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.font-onest {
+  font-family: 'Onest', system-ui, sans-serif;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@theme {
+  --color-page: #0F1117;
+  --color-card: #161B22;
+  --color-dropdown: #1C2333;
+  --color-accent: #4F46E5;
+  --color-accent-hover: #818CF8;
+}
