@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@source "..";
 
 :root {
   --bg-page: #0F1117;
@@ -21,6 +20,14 @@
   --trend-down: #F87171;
   --reg-green: #10B981;
   --reg-red: #EF4444;
+  --sticky-bg: rgba(15,17,23, 0.9);
+  --cta-gradient-from: rgba(79,70,229, 0.08);
+  --cta-gradient-to: rgba(79,70,229, 0.04);
+  --season-alert-bg: rgba(251,191,36, 0.1);
+  --bar-track: rgba(255,255,255, 0.06);
+  --badge-alpha: 0.12;
+  --axis-color: rgba(255,255,255, 0.4);
+  --logo-text: #ffffff;
 
   font-family: 'Onest', system-ui, sans-serif;
   color-scheme: dark;
@@ -32,12 +39,37 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="light"] {
+  --bg-page: #F8F9FB;
+  --bg-card: #FFFFFF;
+  --bg-dropdown: #F0F1F4;
+  --border-default: rgba(0,0,0, 0.08);
+  --border-hover: rgba(0,0,0, 0.15);
+  --accent: #4F46E5;
+  --accent-hover: #4338CA;
+  --text-primary: rgba(0,0,0, 0.87);
+  --text-secondary: rgba(0,0,0, 0.55);
+  --text-muted: rgba(0,0,0, 0.40);
+  --trend-up: #059669;
+  --trend-down: #DC2626;
+  --sticky-bg: rgba(248,249,251, 0.9);
+  --cta-gradient-from: rgba(79,70,229, 0.06);
+  --cta-gradient-to: rgba(79,70,229, 0.03);
+  --season-alert-bg: rgba(251,191,36, 0.08);
+  --bar-track: rgba(0,0,0, 0.06);
+  --badge-alpha: 0.10;
+  --axis-color: rgba(0,0,0, 0.35);
+  --logo-text: rgba(0,0,0, 0.87);
+  color-scheme: light;
+}
+
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
   background: var(--bg-page);
   min-width: 360px;
+  transition: background-color 200ms, color 200ms;
 }
 
 #root {

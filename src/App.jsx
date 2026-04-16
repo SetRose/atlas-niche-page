@@ -10,10 +10,25 @@ import {
   CaretDown, CheckCircle, XCircle,
   CurrencyCircleDollar, Clock, UserCirclePlus,
   ShieldCheck, Certificate, Bell,
-  Coffee, Storefront, MapPin, Users
+  Coffee, Storefront, MapPin, Users,
+  Sun, Moon
 } from '@phosphor-icons/react'
 
+// ─── THEME ───────────────────────────────────────────
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark')
+  const toggle = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('atlas-theme', next)
+  }
+  return { theme, toggle, isDark: theme === 'dark' }
+}
+
 // ─── DATA ─────────────────────────────────────────────
+
 const DEMAND_DATA = [
   { m: 'Янв 24', v: 9800 }, { m: 'Фев', v: 10200 }, { m: 'Мар', v: 11000 },
   { m: 'Апр', v: 11400 }, { m: 'Май', v: 13500 }, { m: 'Июн', v: 14200 },
@@ -121,9 +136,19 @@ function AtlasLogo() {
   return (
     <div className="flex items-center gap-2">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <defs>
+          <clipPath id="tri-clip">
+            <path d="M10 2L18 18H2L10 2Z" />
+          </clipPath>
+        </defs>
         <path d="M10 2L18 18H2L10 2Z" fill="#4F46E5" />
+        <g clipPath="url(#tri-clip)">
+          <line x1="2" y1="10" x2="18" y2="10" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+          <line x1="2" y1="14" x2="18" y2="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+          <line x1="10" y1="2" x2="10" y2="18" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+        </g>
       </svg>
-      <span className="font-onest text-[20px] font-bold text-white">Atlas</span>
+      <span className="font-onest text-[20px] font-bold" style={{ color: 'var(--logo-text)' }}>Atlas</span>
     </div>
   )
 }
@@ -173,7 +198,7 @@ function HBar({ label, value, maxValue, color = '#818CF8' }) {
         <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{label}</span>
         <span className="font-num text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{value}</span>
       </div>
-      <div className="h-[6px] rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+      <div className="h-[6px] rounded-full" style={{ background: 'var(--bar-track)' }}>
         <div className="h-full rounded-full" style={{ width: `${(value / maxValue) * 100}%`, background: color }} />
       </div>
     </div>
@@ -214,7 +239,7 @@ function OkvedChips() {
 function CTABanner({ heading, sub }) {
   return (
     <div className="rounded-[12px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4"
-      style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.08), rgba(79,70,229,0.04))' }}>
+      style={{ background: 'linear-gradient(135deg, var(--cta-gradient-from), var(--cta-gradient-to))' }}>
       <p className="text-[16px] font-medium" style={{ color: 'var(--text-primary)' }}>
         {heading || 'У вас другая идея? Проверим за 2 минуты на реальных данных'}
       </p>
@@ -226,6 +251,29 @@ function CTABanner({ heading, sub }) {
         <span className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
           {sub || 'Бесплатно, без регистрации'}
         </span>
+      </div>
+    </div>
+  )
+}
+
+function InlineEmail() {
+  return (
+    <div className="rounded-[12px] p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      style={{ background: 'rgba(79,70,229, 0.06)' }}>
+      <div className="shrink-0">
+        <p className="text-[15px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+          Получить отчёт по нише «Кофейня»
+        </p>
+        <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+          Спрос, конкуренция, зарплаты — раз в месяц на email
+        </p>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+        <input type="email" placeholder="Email"
+          className="px-3 py-2.5 rounded-[8px] text-[13px] outline-none min-w-[200px]"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }} />
+        <button className="px-5 py-2.5 rounded-[8px] text-[13px] font-medium text-white whitespace-nowrap"
+          style={{ background: 'var(--accent)' }}>Получить</button>
       </div>
     </div>
   )
@@ -302,10 +350,25 @@ function FAQItem({ q, a, open, onToggle }) {
 
 // ─── HEADER ───────────────────────────────────────────
 
-function Header({ onMobileMenu, mobileMenuOpen }) {
+function ThemeToggle({ isDark, onToggle }) {
+  return (
+    <button onClick={onToggle}
+      className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] transition-colors duration-150 shrink-0"
+      style={{ border: '1px solid var(--border-default)', background: 'transparent' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-dropdown)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      aria-label={isDark ? 'Светлая тема' : 'Тёмная тема'}>
+      {isDark
+        ? <Sun size={18} style={{ color: 'var(--text-secondary)' }} />
+        : <Moon size={18} style={{ color: 'var(--text-secondary)' }} />}
+    </button>
+  )
+}
+
+function Header({ onMobileMenu, mobileMenuOpen, isDark, onThemeToggle }) {
   return (
     <header className="sticky top-0 z-50 border-b"
-      style={{ background: 'rgba(15,17,23,0.9)', backdropFilter: 'blur(12px)', borderColor: 'var(--border-default)' }}>
+      style={{ background: 'var(--sticky-bg)', backdropFilter: 'blur(12px)', borderColor: 'var(--border-default)' }}>
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
         <AtlasLogo />
         <nav className="hidden md:flex items-center gap-6">
@@ -313,12 +376,13 @@ function Header({ onMobileMenu, mobileMenuOpen }) {
             <a key={item} href="#" className="text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{item}</a>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
-          <button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-[8px] text-[14px] font-medium text-white"
+        <div className="flex items-center gap-3 overflow-hidden">
+          <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
+          <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-[14px] font-medium text-white shrink-0"
             style={{ background: 'var(--accent)' }}>
             Проверить идею
           </button>
-          <button className="md:hidden p-2" onClick={onMobileMenu} style={{ color: 'var(--text-primary)' }}>
+          <button className="md:hidden p-2 shrink-0" onClick={onMobileMenu} style={{ color: 'var(--text-primary)' }}>
             {mobileMenuOpen ? <X size={24} /> : <List size={24} />}
           </button>
         </div>
@@ -356,7 +420,7 @@ function StickyTabs({ activeZone, visible }) {
     <div className="fixed left-0 right-0 z-30 border-b transition-transform duration-300"
       style={{
         top: '56px',
-        background: 'rgba(15,17,23,0.9)',
+        background: 'var(--sticky-bg)',
         backdropFilter: 'blur(12px)',
         borderColor: 'var(--border-default)',
         transform: visible ? 'translateY(0)' : 'translateY(-100%)',
@@ -459,6 +523,7 @@ function MobileStickyCTA({ visible }) {
 // ─── MAIN APP ─────────────────────────────────────────
 
 export default function App() {
+  const { theme, toggle: toggleTheme, isDark } = useTheme()
   const [mobileMenu, setMobileMenu] = useState(false)
   const [activeZone, setActiveZone] = useState('zone1')
   const [tabsVisible, setTabsVisible] = useState(false)
@@ -471,6 +536,9 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(false)
   const [licenseOpen, setLicenseOpen] = useState(false)
   const [okvedOpen, setOkvedOpen] = useState(false)
+
+  const axisColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)'
+  const legendColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -520,7 +588,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
-      <Header onMobileMenu={() => setMobileMenu(!mobileMenu)} mobileMenuOpen={mobileMenu} />
+      <Header onMobileMenu={() => setMobileMenu(!mobileMenu)} mobileMenuOpen={mobileMenu}
+        isDark={isDark} onThemeToggle={toggleTheme} />
       <MobileMenu open={mobileMenu} />
       <StickyTabs activeZone={activeZone} visible={tabsVisible && !scrollingDown} />
 
@@ -531,32 +600,29 @@ export default function App() {
 
           {/* Block 1 — Region switcher */}
           <div className="mb-6">
-            {isMobile ? (
-              <select className="w-full px-4 py-2.5 rounded-[8px] text-[13px] font-medium appearance-none"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>
-                <option>Вся Россия</option>
-                <option disabled>Москва (скоро)</option>
-                <option disabled>Санкт-Петербург (скоро)</option>
-                <option disabled>Екатеринбург (скоро)</option>
-                <option disabled>Краснодар (скоро)</option>
-              </select>
-            ) : (
-              <div className="flex gap-2 flex-wrap">
-                {['Вся Россия', 'Москва', 'Санкт-Петербург', 'Екатеринбург', 'Краснодар'].map((r, i) => (
-                  <button key={r}
-                    className="relative h-[36px] px-4 rounded-[18px] text-[13px] font-medium transition-colors duration-150"
-                    style={{
-                      background: i === 0 ? 'var(--accent)' : 'transparent',
-                      color: i === 0 ? 'white' : 'var(--text-secondary)',
-                      opacity: i === 0 ? 1 : 0.45,
-                      border: i === 0 ? 'none' : '1px solid var(--border-default)',
-                    }}
-                    title={i !== 0 ? 'Данные скоро появятся' : undefined}>
-                    {r}
-                  </button>
-                ))}
-              </div>
-            )}
+            <select className="md:hidden w-full px-4 py-2.5 rounded-[8px] text-[13px] font-medium appearance-none"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>
+              <option>Вся Россия</option>
+              <option disabled>Москва (скоро)</option>
+              <option disabled>Санкт-Петербург (скоро)</option>
+              <option disabled>Екатеринбург (скоро)</option>
+              <option disabled>Краснодар (скоро)</option>
+            </select>
+            <div className="hidden md:flex gap-2 flex-wrap">
+              {['Вся Россия', 'Москва', 'Санкт-Петербург', 'Екатеринбург', 'Краснодар'].map((r, i) => (
+                <button key={r}
+                  className="relative h-[36px] px-4 rounded-[18px] text-[13px] font-medium transition-colors duration-150"
+                  style={{
+                    background: i === 0 ? 'var(--accent)' : 'transparent',
+                    color: i === 0 ? 'white' : 'var(--text-secondary)',
+                    opacity: i === 0 ? 1 : 0.45,
+                    border: i === 0 ? 'none' : '1px solid var(--border-default)',
+                  }}
+                  title={i !== 0 ? 'Данные скоро появятся' : undefined}>
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Block 2 — Verdict */}
@@ -570,8 +636,8 @@ export default function App() {
               Кофейня — анализ бизнес-ниши
             </h1>
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Badge color="#60A5FA" bg="rgba(96,165,250,0.12)">↑ Перспективная</Badge>
-              <Badge color="var(--text-secondary)" bg="rgba(255,255,255,0.06)">Растущая</Badge>
+              <Badge color="#60A5FA" bg={`rgba(96,165,250, var(--badge-alpha))`}>↑ Перспективная</Badge>
+              <Badge color="var(--text-secondary)" bg="var(--bar-track)">Растущая</Badge>
             </div>
             <p className="text-[15px] leading-[1.6] mb-2" style={{ color: 'var(--text-secondary)' }}>
               Высокий спрос (<span className="font-num">12 400</span> запросов/мес) при умеренной конкуренции (<span className="font-num">1 240</span> компаний). Рынок растёт <span className="font-num">+8%</span> за год.
@@ -585,14 +651,14 @@ export default function App() {
           <div className="mb-6">
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-5 md:overflow-visible pb-2 md:pb-0">
               <KpiCard icon={ChartLineUp} label="Спрос, тыс." value="12,4"
-                context="↑ +15% за год" contextColor="#34D399" spark onClick={() => setModal('demand')} />
+                context="↑ +15% за год" contextColor="var(--trend-up)" spark onClick={() => setModal('demand')} />
               <KpiCard icon={TrendUp} label="D-S Gap"
-                value={<Badge color="#60A5FA" bg="rgba(96,165,250,0.12)">Высокий</Badge>} />
+                value={<Badge color="#60A5FA" bg={`rgba(96,165,250, var(--badge-alpha))`}>Высокий</Badge>} />
               <KpiCard icon={Buildings} label="Компаний" value={<span className="font-num">1 240</span>}
-                context="↑ +87 за год" contextColor="#34D399" onClick={() => setModal('companies')} />
+                context="↑ +87 за год" contextColor="var(--trend-up)" onClick={() => setModal('companies')} />
               <KpiCard icon={TrendUp} label="Чист. рост" value="+135" context="бизнесов/мес" />
               <KpiCard icon={Briefcase} label="Вакансии" value={<span className="font-num">3 420</span>}
-                context="↑ +8% за год" contextColor="#34D399" onClick={() => setModal('vacancies')} />
+                context="↑ +8% за год" contextColor="var(--trend-up)" onClick={() => setModal('vacancies')} />
             </div>
           </div>
           <div id="kpi-end" />
@@ -600,14 +666,11 @@ export default function App() {
 
         {/* Block 4 — Seasonal Alert */}
         <div className="mb-8 rounded-[12px] px-5 py-4"
-          style={{ background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #FBBF24' }}>
+          style={{ background: 'var(--season-alert-bg)', borderLeft: '3px solid #FBBF24' }}>
           <p className="text-[14px]" style={{ color: 'var(--text-primary)' }}>
             &#128197; Пик спроса: май–июнь (+45%). До пика — 1 месяц.
           </p>
         </div>
-
-        {/* CTA #1 */}
-        <div className="mb-16"><CTABanner /></div>
 
         {/* ═══════════════════════ ZONE 2 — Market Dynamics ═══════════════════════ */}
         <section id="zone2" className="mb-16">
@@ -624,9 +687,9 @@ export default function App() {
                       <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
+                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: axisColor }}
                     axisLine={false} tickLine={false} interval={2} />
-                  <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
+                  <YAxis tick={{ fontSize: 11, fill: axisColor }}
                     axisLine={false} tickLine={false} width={45}
                     tickFormatter={v => (v / 1000).toFixed(0) + 'К'} />
                   <Tooltip content={<DemandTooltip />} />
@@ -654,6 +717,12 @@ export default function App() {
             <Source>Яндекс Wordstat · апрель 2026</Source>
           </Card>
 
+          {/* Inline Email — between block 5 and block 6 */}
+          <div className="mb-8"><InlineEmail /></div>
+
+          {/* CTA #1 — after block 5 + inline email, before block 6 */}
+          <div className="mb-8"><CTABanner /></div>
+
           {/* Block 6 — Birth/Death */}
           <Card>
             <SectionTitle>+87 бизнесов/мес — рынок растёт, но 48 закрываются</SectionTitle>
@@ -661,13 +730,13 @@ export default function App() {
               <div className="flex-1 h-[240px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={BIRTH_DEATH} barGap={2}>
-                    <XAxis dataKey="m" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
+                    <XAxis dataKey="m" tick={{ fontSize: 11, fill: axisColor }}
                       axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
+                    <YAxis tick={{ fontSize: 11, fill: axisColor }}
                       axisLine={false} tickLine={false} width={35} />
                     <Tooltip content={<BirthDeathTooltip />} />
                     <Legend formatter={v => v === 'reg' ? '↑ Открыто' : '↓ Закрыто'}
-                      wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }} />
+                      wrapperStyle={{ fontSize: '12px', color: legendColor }} />
                     <Bar dataKey="reg" name="reg" fill="#10B981" radius={[3, 3, 0, 0]} isAnimationActive={false} />
                     <Bar dataKey="liq" name="liq" fill="#EF4444" radius={[3, 3, 0, 0]} isAnimationActive={false} />
                   </BarChart>
@@ -730,7 +799,7 @@ export default function App() {
                         <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
                         <span className="font-num font-medium" style={{ color: 'var(--text-primary)' }}>{item.pct}%</span>
                       </div>
-                      <div className="h-[8px] rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-[8px] rounded-full" style={{ background: 'var(--bar-track)' }}>
                         <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: item.label === 'ИП' ? '#818CF8' : '#60A5FA' }} />
                       </div>
                     </div>
@@ -746,7 +815,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="mt-6 p-4 rounded-[8px]" style={{ background: 'rgba(79,70,229,0.08)' }}>
+            <div className="mt-6 p-4 rounded-[8px]" style={{ background: 'var(--cta-gradient-from)' }}>
               <p className="text-[14px]" style={{ color: 'var(--text-primary)' }}>
                 <MapPin size={16} weight="duotone" color="#4F46E5" className="inline mr-1.5 align-text-bottom" />
                 Недооценённый регион: <strong>Пермь</strong> — <span className="font-num">23</span> компании при спросе <span className="font-num">1 800</span> запр./мес
@@ -802,9 +871,10 @@ export default function App() {
             <Source>ФНС РМСП · Яндекс Wordstat · Росстат · апрель 2026</Source>
           </Card>
 
-          {/* Block 9 — Licensing */}
-          {isMobile ? (
-            <Card className="mb-8">
+          {/* Block 9 — Licensing (mobile: accordion, desktop: grid) */}
+          <Card className="mb-8">
+            {/* Mobile accordion */}
+            <div className="md:hidden">
               <button onClick={() => setLicenseOpen(!licenseOpen)} className="w-full flex items-center justify-between">
                 <span className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Лицензирование и налоги</span>
                 <CaretDown size={18} style={{ color: 'var(--text-secondary)', transform: licenseOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 250ms' }} />
@@ -817,9 +887,9 @@ export default function App() {
                   <LicenseItem icon={Bell} label="Уведомления" value="Роспотребнадзор" color="#FBBF24" />
                 </div>
               </div>
-            </Card>
-          ) : (
-            <Card className="mb-8">
+            </div>
+            {/* Desktop grid */}
+            <div className="hidden md:block">
               <SectionTitle>Лицензирование и налоги</SectionTitle>
               <div className="grid grid-cols-4 gap-4 mt-2">
                 <LicenseItem icon={Certificate} label="Лицензия" value="Не нужна" color="#60A5FA" />
@@ -827,8 +897,8 @@ export default function App() {
                 <LicenseItem icon={ShieldCheck} label="Класс риска" value="1" color="#5EEAD4" />
                 <LicenseItem icon={Bell} label="Уведомления" value="Роспотребнадзор" color="#FBBF24" />
               </div>
-            </Card>
-          )}
+            </div>
+          </Card>
 
           {/* CTA #2 */}
           <CTABanner heading="Изучили конкурентов? Готовы действовать?" />
@@ -885,7 +955,7 @@ export default function App() {
                   { label: 'Проверить лендингом', ok: false },
                 ].map(item => (
                   <div key={item.label} className="flex items-center gap-2 text-[13px]">
-                    {item.ok ? <CheckCircle size={16} weight="fill" color="#34D399" /> : <XCircle size={16} weight="fill" color="#F87171" />}
+                    {item.ok ? <CheckCircle size={16} weight="fill" color="var(--trend-up)" /> : <XCircle size={16} weight="fill" color="var(--trend-down)" />}
                     <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
                   </div>
                 ))}
@@ -953,7 +1023,7 @@ export default function App() {
                   <div className="flex-1 space-y-2 mb-4">
                     {bank.features.map((f, i) => (
                       <div key={i} className="flex items-start gap-2 text-[13px]">
-                        <CheckCircle size={16} weight="fill" color="#34D399" className="mt-0.5 shrink-0" />
+                        <CheckCircle size={16} weight="fill" color="var(--trend-up)" className="mt-0.5 shrink-0" />
                         <span style={{ color: 'var(--text-secondary)' }}>{f}</span>
                       </div>
                     ))}
@@ -974,19 +1044,21 @@ export default function App() {
 
           {/* Block 14 — Related OKVED */}
           <Card className="mb-8">
-            {isMobile ? (
-              <>
-                <button onClick={() => setOkvedOpen(!okvedOpen)} className="w-full flex items-center justify-between">
-                  <span className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>70% кофеен добавляют выпечку</span>
-                  <CaretDown size={18} style={{ color: 'var(--text-secondary)', transform: okvedOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 250ms' }} />
-                </button>
-                <div className="overflow-hidden transition-all duration-250" style={{ maxHeight: okvedOpen ? '300px' : '0' }}>
-                  <OkvedChips />
-                </div>
-              </>
-            ) : (
-              <><SectionTitle>70% кофеен добавляют выпечку</SectionTitle><OkvedChips /></>
-            )}
+            {/* Mobile accordion */}
+            <div className="md:hidden">
+              <button onClick={() => setOkvedOpen(!okvedOpen)} className="w-full flex items-center justify-between">
+                <span className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>70% кофеен добавляют выпечку</span>
+                <CaretDown size={18} style={{ color: 'var(--text-secondary)', transform: okvedOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 250ms' }} />
+              </button>
+              <div className="overflow-hidden transition-all duration-250" style={{ maxHeight: okvedOpen ? '300px' : '0' }}>
+                <OkvedChips />
+              </div>
+            </div>
+            {/* Desktop expanded */}
+            <div className="hidden md:block">
+              <SectionTitle>70% кофеен добавляют выпечку</SectionTitle>
+              <OkvedChips />
+            </div>
           </Card>
 
           {/* Block 15 — Pros/Cons */}
@@ -994,7 +1066,7 @@ export default function App() {
             <SectionTitle>Стабильный спрос и быстрый старт — но локация решает всё</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div>
-                <p className="text-[13px] font-medium mb-3" style={{ color: '#34D399' }}>Преимущества</p>
+                <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--trend-up)' }}>Преимущества</p>
                 <div className="space-y-3">
                   {[
                     'Стабильный ежедневный спрос — кофе пьют каждый день',
@@ -1004,14 +1076,14 @@ export default function App() {
                     'Масштабируемость — от одной точки к сети',
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-2.5">
-                      <CheckCircle size={18} weight="fill" color="#34D399" className="mt-0.5 shrink-0" />
+                      <CheckCircle size={18} weight="fill" color="var(--trend-up)" className="mt-0.5 shrink-0" />
                       <span className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-secondary)' }}>{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-[13px] font-medium mb-3" style={{ color: '#F87171' }}>Риски</p>
+                <p className="text-[13px] font-medium mb-3" style={{ color: 'var(--trend-down)' }}>Риски</p>
                 <div className="space-y-3">
                   {[
                     'Локация решает 70% успеха — ошибка стоит всех инвестиций',
@@ -1021,7 +1093,7 @@ export default function App() {
                     'Текучка персонала — средний срок работы бариста 8 месяцев',
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-2.5">
-                      <XCircle size={18} weight="fill" color="#F87171" className="mt-0.5 shrink-0" />
+                      <XCircle size={18} weight="fill" color="var(--trend-down)" className="mt-0.5 shrink-0" />
                       <span className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-secondary)' }}>{item}</span>
                     </div>
                   ))}
@@ -1140,8 +1212,8 @@ export default function App() {
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={DEMAND_DATA.slice(-12)}>
-              <XAxis dataKey="m" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} width={45}
+              <XAxis dataKey="m" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} width={45}
                 tickFormatter={v => (v / 1000).toFixed(0) + 'К'} />
               <Tooltip content={<DemandTooltip />} />
               <Area type="monotone" dataKey="v" stroke="#818CF8" strokeWidth={2}
@@ -1159,8 +1231,8 @@ export default function App() {
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={BIRTH_DEATH.slice(-6)}>
-              <XAxis dataKey="m" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} width={35} />
+              <XAxis dataKey="m" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} width={35} />
               <Tooltip content={<BirthDeathTooltip />} />
               <Bar dataKey="reg" fill="#10B981" radius={[3, 3, 0, 0]} isAnimationActive={false} />
               <Bar dataKey="liq" fill="#EF4444" radius={[3, 3, 0, 0]} isAnimationActive={false} />
