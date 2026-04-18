@@ -28,6 +28,11 @@
   --badge-alpha: 0.12;
   --axis-color: rgba(255,255,255, 0.4);
   --logo-text: #ffffff;
+  /* Percentile bar (profession page) */
+  --percentile-core: var(--accent);
+  --percentile-whiskers: rgba(79, 70, 229, 0.35);
+  --percentile-median: rgba(255, 255, 255, 0.95);
+  --benchmark-line: #FBBF24;
 
   font-family: 'Onest', system-ui, sans-serif;
   color-scheme: dark;
@@ -60,6 +65,8 @@
   --badge-alpha: 0.10;
   --axis-color: rgba(0,0,0, 0.35);
   --logo-text: rgba(0,0,0, 0.87);
+  --percentile-median: rgba(0, 0, 0, 0.85);
+  --benchmark-line: #D97706;
   color-scheme: light;
 }
 
@@ -92,6 +99,166 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ═══ PROFESSION PAGE — salary hero ═══ */
+.salary-hero {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  font-size: clamp(32px, 10vw, 48px);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+/* ═══ PROFESSION PAGE — percentile bar (SVG-free, pure div layout) ═══ */
+.pbar {
+  position: relative;
+  width: 100%;
+  height: 56px;
+}
+.pbar-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: 24px;
+}
+.pbar-whisker {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 12px;
+  background: var(--percentile-whiskers);
+  border-radius: 3px;
+}
+.pbar-iqr {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  background: var(--percentile-core);
+  border-radius: 4px;
+}
+.pbar-median {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 34px;
+  background: var(--percentile-median);
+  transform: translate(-1px, -50%);
+  border-radius: 1px;
+}
+.pbar-benchmark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed var(--benchmark-line);
+}
+.pbar-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--percentile-core);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 150ms, border-color 150ms;
+}
+.pbar-dot:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+  border-color: var(--accent-hover);
+}
+
+@media (max-width: 640px) {
+  .pbar { height: 44px; }
+  .pbar-iqr { height: 18px; }
+  .pbar-whisker { height: 8px; }
+  .pbar-median { height: 26px; }
+}
+
+/* Grade stack (no dots, no whiskers, just IQR + median on common axis) */
+.grade-row {
+  position: relative;
+  width: 100%;
+  height: 22px;
+}
+.grade-iqr {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 14px;
+  background: var(--percentile-core);
+  border-radius: 3px;
+}
+.grade-median {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 22px;
+  background: var(--percentile-median);
+  transform: translate(-1px, -50%);
+  border-radius: 1px;
+}
+
+/* Mini range bar for stepper */
+.mini-range {
+  position: relative;
+  height: 4px;
+  background: var(--bar-track);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mini-range-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* Skill progress bar */
+.skill-track {
+  position: relative;
+  height: 6px;
+  background: var(--bar-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.skill-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+/* City bar (horizontal, with benchmark) */
+.city-track {
+  position: relative;
+  height: 14px;
+  background: var(--bar-track);
+  border-radius: 3px;
+  overflow: visible;
+}
+.city-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--accent);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: filter 150ms;
+}
+.city-fill:hover {
+  filter: brightness(1.15);
 }
 
 @theme {

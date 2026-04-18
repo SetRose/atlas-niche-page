@@ -1,31 +1,23 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, Legend
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, Legend,
 } from 'recharts'
 import {
-  List, X, Triangle,
   TrendUp, Buildings, Briefcase,
   ChartLineUp, Scales,
   CaretDown, CheckCircle, XCircle,
   CurrencyCircleDollar, Clock, UserCirclePlus,
   ShieldCheck, Certificate, Bell,
   Coffee, Storefront, MapPin, Users,
-  Sun, Moon
 } from '@phosphor-icons/react'
 
-// ─── THEME ───────────────────────────────────────────
-
-function useTheme() {
-  const [theme, setTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark')
-  const toggle = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    document.documentElement.setAttribute('data-theme', next)
-    localStorage.setItem('atlas-theme', next)
-  }
-  return { theme, toggle, isDark: theme === 'dark' }
-}
+import {
+  useTheme, fmt,
+  Badge, Card, SectionTitle, Source, HBar,
+  CTABanner, Modal, FAQItem,
+  Header, MobileMenu, StickyTabs, KpiCard, SlideInEmail, MobileStickyCTA,
+} from './components/atlas.jsx'
 
 // ─── DATA ─────────────────────────────────────────────
 
@@ -84,40 +76,40 @@ const BANKS = [
   {
     name: 'Точка', letter: 'Т', recommended: true,
     features: ['0 ₽/мес первые 3 месяца', 'Эквайринг от 1,5%', 'Кассовая интеграция'],
-    erid: '2VtzqwmK4gP', inn: '7709486011', advertiser: 'АО «Точка»'
+    erid: '2VtzqwmK4gP', inn: '7709486011', advertiser: 'АО «Точка»',
   },
   {
     name: 'Т-Банк', letter: 'Т',
     features: ['0 ₽/мес первые 2 месяца', 'Эквайринг от 1,69%', 'Кешбэк 1% на все'],
-    erid: '2VtzqwmK4gQ', inn: '7710140679', advertiser: 'АО «Тинькофф Банк»'
+    erid: '2VtzqwmK4gQ', inn: '7710140679', advertiser: 'АО «Тинькофф Банк»',
   },
   {
     name: 'Альфа-Банк', letter: 'А',
     features: ['0 ₽/мес первый месяц', 'Эквайринг от 1,8%', 'Кешбэк на рекламу'],
-    erid: '2VtzqwmK4gR', inn: '7728168971', advertiser: 'АО «Альфа-Банк»'
+    erid: '2VtzqwmK4gR', inn: '7728168971', advertiser: 'АО «Альфа-Банк»',
   },
 ]
 
 const FAQ_DATA = [
   {
     q: 'Нужна ли лицензия для кофейни?',
-    a: 'Нет, кофейня не требует лицензии. Нужно уведомить Роспотребнадзор о начале деятельности. ОКВЭД: 56.10 (деятельность ресторанов и кафе). Также понадобится санитарно-эпидемиологическое заключение на помещение.'
+    a: 'Нет, кофейня не требует лицензии. Нужно уведомить Роспотребнадзор о начале деятельности. ОКВЭД: 56.10 (деятельность ресторанов и кафе). Также понадобится санитарно-эпидемиологическое заключение на помещение.',
   },
   {
     q: 'Сколько стоит открыть кофейню?',
-    a: 'От 500 000 ₽ (мини-формат, takeaway) до 2 000 000 ₽ (полноценное заведение с посадкой). Основные статьи: аренда (30%), ремонт (20%), оборудование — кофемашина от 150 000 ₽ (25%), первая закупка сырья (10%), маркетинг (15%).'
+    a: 'От 500 000 ₽ (мини-формат, takeaway) до 2 000 000 ₽ (полноценное заведение с посадкой). Основные статьи: аренда (30%), ремонт (20%), оборудование — кофемашина от 150 000 ₽ (25%), первая закупка сырья (10%), маркетинг (15%).',
   },
   {
     q: 'Какой ОКВЭД выбрать?',
-    a: 'Основной: 56.10 (деятельность ресторанов и услуги по доставке продуктов питания). Дополнительные: 47.24 (розничная торговля хлебом и хлебобулочными изделиями), 56.10.21 (приготовление и продажа напитков). Регистрация ОКВЭД бесплатна при открытии ИП/ООО.'
+    a: 'Основной: 56.10 (деятельность ресторанов и услуги по доставке продуктов питания). Дополнительные: 47.24 (розничная торговля хлебом и хлебобулочными изделиями), 56.10.21 (приготовление и продажа напитков). Регистрация ОКВЭД бесплатна при открытии ИП/ООО.',
   },
   {
     q: 'Кофейня или пекарня — что выгоднее?',
-    a: 'Кофейня дешевле в запуске (500 000 ₽ vs 800 000 ₽), быстрее окупается (8–14 мес vs 12–18 мес), но маржинальность пекарни выше (65% vs 55% на выпечку). Комбинация «кофейня + выпечка» — самая прибыльная модель, позволяющая увеличить средний чек на 40–60%.'
+    a: 'Кофейня дешевле в запуске (500 000 ₽ vs 800 000 ₽), быстрее окупается (8–14 мес vs 12–18 мес), но маржинальность пекарни выше (65% vs 55% на выпечку). Комбинация «кофейня + выпечка» — самая прибыльная модель, позволяющая увеличить средний чек на 40–60%.',
   },
   {
     q: 'Можно ли открыть кофейню без опыта?',
-    a: 'Да, 60% владельцев кофеен не имели опыта в HoReCa. Ключевое: нанять опытного бариста и пройти базовый курс по обжарке и приготовлению кофе (40–80 часов). Франшиза снижает риски, но увеличивает стартовые вложения на 200 000–500 000 ₽.'
+    a: 'Да, 60% владельцев кофеен не имели опыта в HoReCa. Ключевое: нанять опытного бариста и пройти базовый курс по обжарке и приготовлению кофе (40–80 часов). Франшиза снижает риски, но увеличивает стартовые вложения на 200 000–500 000 ₽.',
   },
 ]
 
@@ -128,82 +120,15 @@ const SIMILAR_NICHES = [
   { name: 'Кондитерская', verdict: 'Перспективная', color: '#60A5FA', demand: '5 400', companies: '670' },
 ]
 
-const fmt = n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')
+const NICHE_TABS = [
+  { id: 'zone1', label: 'Обзор' },
+  { id: 'zone2', label: 'Динамика' },
+  { id: 'zone3', label: 'Конкуренция' },
+  { id: 'zone4', label: 'Финансы' },
+  { id: 'zone5', label: 'Дополнительно' },
+]
 
-// ─── SMALL COMPONENTS ─────────────────────────────────
-
-function AtlasLogo() {
-  return (
-    <div className="flex items-center gap-2">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <defs>
-          <clipPath id="tri-clip">
-            <path d="M10 2L18 18H2L10 2Z" />
-          </clipPath>
-        </defs>
-        <path d="M10 2L18 18H2L10 2Z" fill="#4F46E5" />
-        <g clipPath="url(#tri-clip)">
-          <line x1="2" y1="10" x2="18" y2="10" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-          <line x1="2" y1="14" x2="18" y2="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-          <line x1="10" y1="2" x2="10" y2="18" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-        </g>
-      </svg>
-      <span className="font-onest text-[20px] font-bold" style={{ color: 'var(--logo-text)' }}>Atlas</span>
-    </div>
-  )
-}
-
-function Badge({ children, color, bg }) {
-  return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-[9999px] text-[13px] font-medium"
-      style={{ color, background: bg }}>
-      {children}
-    </span>
-  )
-}
-
-function Card({ children, className = '', hover = false, onClick, style = {} }) {
-  const ref = useRef(null)
-  return (
-    <div
-      ref={ref}
-      onClick={onClick}
-      className={`rounded-[12px] p-5 transition-colors duration-150 ${hover ? 'cursor-pointer' : ''} ${className}`}
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', ...style }}
-      onMouseEnter={() => { if (hover && ref.current) ref.current.style.borderColor = 'var(--border-hover)' }}
-      onMouseLeave={() => { if (hover && ref.current) ref.current.style.borderColor = 'var(--border-default)' }}
-    >
-      {children}
-    </div>
-  )
-}
-
-function SectionTitle({ children }) {
-  return (
-    <h2 className="font-onest text-[20px] md:text-[24px] font-semibold leading-[1.25] mb-4"
-      style={{ color: 'var(--text-primary)' }}>
-      {children}
-    </h2>
-  )
-}
-
-function Source({ children }) {
-  return <p className="mt-3 text-[11px] leading-[1.45]" style={{ color: 'var(--text-muted)' }}>{children}</p>
-}
-
-function HBar({ label, value, maxValue, color = '#818CF8' }) {
-  return (
-    <div className="mb-3">
-      <div className="flex justify-between mb-1">
-        <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-        <span className="font-num text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{value}</span>
-      </div>
-      <div className="h-[6px] rounded-full" style={{ background: 'var(--bar-track)' }}>
-        <div className="h-full rounded-full" style={{ width: `${(value / maxValue) * 100}%`, background: color }} />
-      </div>
-    </div>
-  )
-}
+// ─── NICHE-ONLY COMPONENTS ───────────────────────────
 
 function LicenseItem({ icon: Icon, label, value, color }) {
   return (
@@ -236,26 +161,6 @@ function OkvedChips() {
   )
 }
 
-function CTABanner({ heading, sub }) {
-  return (
-    <div className="rounded-[12px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4"
-      style={{ background: 'linear-gradient(135deg, var(--cta-gradient-from), var(--cta-gradient-to))' }}>
-      <p className="text-[16px] font-medium" style={{ color: 'var(--text-primary)' }}>
-        {heading || 'У вас другая идея? Проверим за 2 минуты на реальных данных'}
-      </p>
-      <div className="flex flex-col items-center shrink-0">
-        <button className="px-6 py-3 rounded-[8px] text-[14px] font-medium text-white whitespace-nowrap"
-          style={{ background: 'var(--accent)' }}>
-          Проверить свою идею
-        </button>
-        <span className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-          {sub || 'Бесплатно, без регистрации'}
-        </span>
-      </div>
-    </div>
-  )
-}
-
 function InlineEmail() {
   return (
     <div className="rounded-[12px] p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
@@ -278,8 +183,6 @@ function InlineEmail() {
     </div>
   )
 }
-
-// ─── TOOLTIPS ─────────────────────────────────────────
 
 function DemandTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
@@ -307,223 +210,10 @@ function BirthDeathTooltip({ active, payload, label }) {
   )
 }
 
-// ─── MODALS ───────────────────────────────────────────
-
-function Modal({ open, onClose, title, children }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.5)' }} />
-      <div
-        className="relative w-full md:w-[600px] md:max-h-[80vh] max-h-[70vh] overflow-y-auto rounded-t-[16px] md:rounded-[12px] p-6"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-secondary)' }}><X size={20} /></button>
-        </div>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-// ─── FAQ ──────────────────────────────────────────────
-
-function FAQItem({ q, a, open, onToggle }) {
-  const contentRef = useRef(null)
-  return (
-    <div className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-      <button onClick={onToggle} className="w-full flex items-center justify-between py-4 text-left">
-        <span className="text-[15px] font-medium pr-4" style={{ color: 'var(--text-primary)' }}>{q}</span>
-        <CaretDown size={18} className="shrink-0 transition-transform duration-250"
-          style={{ color: 'var(--text-secondary)', transform: open ? 'rotate(180deg)' : 'rotate(0)' }} />
-      </button>
-      <div className="overflow-hidden transition-all duration-250"
-        style={{ maxHeight: open ? (contentRef.current?.scrollHeight || 500) + 'px' : '0px' }}>
-        <div ref={contentRef} className="pb-4 text-[14px] leading-[1.5]" style={{ color: 'var(--text-secondary)' }}>{a}</div>
-      </div>
-    </div>
-  )
-}
-
-// ─── HEADER ───────────────────────────────────────────
-
-function ThemeToggle({ isDark, onToggle }) {
-  return (
-    <button onClick={onToggle}
-      className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] transition-colors duration-150 shrink-0"
-      style={{ border: '1px solid var(--border-default)', background: 'transparent' }}
-      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-dropdown)'}
-      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-      aria-label={isDark ? 'Светлая тема' : 'Тёмная тема'}>
-      {isDark
-        ? <Sun size={18} style={{ color: 'var(--text-secondary)' }} />
-        : <Moon size={18} style={{ color: 'var(--text-secondary)' }} />}
-    </button>
-  )
-}
-
-function Header({ onMobileMenu, mobileMenuOpen, isDark, onThemeToggle }) {
-  return (
-    <header className="sticky top-0 z-50 border-b"
-      style={{ background: 'var(--sticky-bg)', backdropFilter: 'blur(12px)', borderColor: 'var(--border-default)' }}>
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
-        <AtlasLogo />
-        <nav className="hidden md:flex items-center gap-6">
-          {['Бизнес-ниши', 'Профессии', 'Статьи'].map(item => (
-            <a key={item} href="#" className="text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{item}</a>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3 overflow-hidden">
-          <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-          <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-[14px] font-medium text-white shrink-0"
-            style={{ background: 'var(--accent)' }}>
-            Проверить идею
-          </button>
-          <button className="md:hidden p-2 shrink-0" onClick={onMobileMenu} style={{ color: 'var(--text-primary)' }}>
-            {mobileMenuOpen ? <X size={24} /> : <List size={24} />}
-          </button>
-        </div>
-      </div>
-    </header>
-  )
-}
-
-function MobileMenu({ open }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-40 md:hidden" style={{ background: 'var(--bg-page)', top: '56px' }}>
-      <nav className="flex flex-col p-6 gap-4">
-        {['Бизнес-ниши', 'Профессии', 'Статьи'].map(item => (
-          <a key={item} href="#" className="text-[16px] font-medium" style={{ color: 'var(--text-primary)' }}>{item}</a>
-        ))}
-        <button className="mt-4 px-4 py-3 rounded-[8px] text-[14px] font-medium text-white"
-          style={{ background: 'var(--accent)' }}>Проверить идею</button>
-      </nav>
-    </div>
-  )
-}
-
-// ─── STICKY TABS ──────────────────────────────────────
-
-function StickyTabs({ activeZone, visible }) {
-  const tabs = [
-    { id: 'zone1', label: 'Обзор' },
-    { id: 'zone2', label: 'Динамика' },
-    { id: 'zone3', label: 'Конкуренция' },
-    { id: 'zone4', label: 'Финансы' },
-    { id: 'zone5', label: 'Дополнительно' },
-  ]
-  return (
-    <div className="fixed left-0 right-0 z-30 border-b transition-transform duration-300"
-      style={{
-        top: '56px',
-        background: 'var(--sticky-bg)',
-        backdropFilter: 'blur(12px)',
-        borderColor: 'var(--border-default)',
-        transform: visible ? 'translateY(0)' : 'translateY(-100%)',
-      }}>
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6">
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide py-2">
-          {tabs.map(t => (
-            <button key={t.id}
-              onClick={() => document.getElementById(t.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="shrink-0 px-4 py-2 rounded-[9999px] text-[13px] font-medium transition-colors duration-150 whitespace-nowrap"
-              style={{
-                background: activeZone === t.id ? 'rgba(79,70,229,0.15)' : 'transparent',
-                color: activeZone === t.id ? '#818CF8' : 'var(--text-secondary)',
-              }}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── KPI CARD ─────────────────────────────────────────
-
-function KpiCard({ icon: Icon, label, value, context, contextColor, spark, onClick }) {
-  return (
-    <Card hover={!!onClick} onClick={onClick} className="min-w-[200px] snap-start shrink-0 md:shrink md:min-w-0">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon size={20} weight="duotone" color="#4F46E5" />
-        <span className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-      </div>
-      <div className="font-num text-[32px] font-bold leading-[1.2]" style={{ color: 'var(--text-primary)' }}>{value}</div>
-      {context && (
-        <div className="mt-1 text-[13px] font-medium" style={{ color: contextColor || 'var(--text-secondary)' }}>{context}</div>
-      )}
-      {spark && (
-        <div className="mt-2 h-[20px]">
-          <ResponsiveContainer width="100%" height={20}>
-            <AreaChart data={SPARK_DATA}>
-              <defs>
-                <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#818CF8" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Area type="monotone" dataKey="v" stroke="#818CF8" strokeWidth={1.5}
-                fill="url(#sparkGrad)" dot={false} isAnimationActive={false} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-// ─── SLIDE-IN EMAIL ───────────────────────────────────
-
-function SlideInEmail({ visible, onClose }) {
-  return (
-    <div className="fixed bottom-6 right-6 z-40 hidden md:block transition-all duration-300"
-      style={{ transform: visible ? 'translateX(0)' : 'translateX(calc(100% + 24px))', opacity: visible ? 1 : 0 }}>
-      <Card className="w-[300px]">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>Не упустите изменения</span>
-          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-secondary)' }}><X size={16} /></button>
-        </div>
-        <p className="text-[13px] mb-3" style={{ color: 'var(--text-secondary)' }}>Ежемесячный отчёт: спрос, конкуренты, зарплаты</p>
-        <div className="flex gap-2">
-          <input type="email" placeholder="Email"
-            className="flex-1 px-3 py-2 rounded-[8px] text-[13px] outline-none"
-            style={{ background: 'var(--bg-dropdown)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }} />
-          <button className="px-3 py-2 rounded-[8px] text-[13px] font-medium text-white shrink-0"
-            style={{ background: 'var(--accent)' }}>Получить</button>
-        </div>
-      </Card>
-    </div>
-  )
-}
-
-// ─── MOBILE STICKY CTA ───────────────────────────────
-
-function MobileStickyCTA({ visible }) {
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden transition-transform duration-300 px-4 pb-3 pt-2"
-      style={{
-        background: 'var(--bg-card)',
-        boxShadow: '0 -4px 16px rgba(0,0,0,0.3)',
-        transform: visible ? 'translateY(0)' : 'translateY(100%)',
-      }}>
-      <div className="flex flex-col items-center">
-        <button className="px-6 py-3 rounded-[8px] text-[14px] font-medium text-white"
-          style={{ background: 'var(--accent)' }}>Проверить идею</button>
-        <span className="mt-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>Бесплатно</span>
-      </div>
-    </div>
-  )
-}
-
 // ─── MAIN APP ─────────────────────────────────────────
 
 export default function App() {
-  const { theme, toggle: toggleTheme, isDark } = useTheme()
+  const { toggle: toggleTheme, isDark } = useTheme()
   const [mobileMenu, setMobileMenu] = useState(false)
   const [activeZone, setActiveZone] = useState('zone1')
   const [tabsVisible, setTabsVisible] = useState(false)
@@ -589,9 +279,9 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <Header onMobileMenu={() => setMobileMenu(!mobileMenu)} mobileMenuOpen={mobileMenu}
-        isDark={isDark} onThemeToggle={toggleTheme} />
-      <MobileMenu open={mobileMenu} />
-      <StickyTabs activeZone={activeZone} visible={tabsVisible && !scrollingDown} />
+        isDark={isDark} onThemeToggle={toggleTheme} activeNav="niches" />
+      <MobileMenu open={mobileMenu} activeNav="niches" />
+      <StickyTabs tabs={NICHE_TABS} activeZone={activeZone} visible={tabsVisible && !scrollingDown} />
 
       <main className="max-w-[1280px] mx-auto px-4 md:px-6">
 
@@ -651,7 +341,22 @@ export default function App() {
           <div className="mb-6">
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-5 md:overflow-visible pb-2 md:pb-0">
               <KpiCard icon={ChartLineUp} label="Спрос, тыс." value="12,4"
-                context="↑ +15% за год" contextColor="var(--trend-up)" spark onClick={() => setModal('demand')} />
+                context="↑ +15% за год" contextColor="var(--trend-up)" onClick={() => setModal('demand')}>
+                <div className="mt-2 h-[20px]">
+                  <ResponsiveContainer width="100%" height={20}>
+                    <AreaChart data={SPARK_DATA}>
+                      <defs>
+                        <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#818CF8" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area type="monotone" dataKey="v" stroke="#818CF8" strokeWidth={1.5}
+                        fill="url(#sparkGrad)" dot={false} isAnimationActive={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </KpiCard>
               <KpiCard icon={TrendUp} label="D-S Gap"
                 value={<Badge color="#60A5FA" bg={`rgba(96,165,250, var(--badge-alpha))`}>Высокий</Badge>} />
               <KpiCard icon={Buildings} label="Компаний" value={<span className="font-num">1 240</span>}
@@ -1107,20 +812,26 @@ export default function App() {
             <SectionTitle>Кого нанимать: 3 ключевые роли</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               {[
-                { role: 'Бариста', salary: '42 000 ₽', vacancies: '1 200', Icon: Coffee },
-                { role: 'Управляющий', salary: '68 000 ₽', vacancies: '340', Icon: Users },
-                { role: 'Кондитер', salary: '48 000 ₽', vacancies: '890', Icon: Storefront },
-              ].map(p => (
-                <div key={p.role} className="p-4 rounded-[8px] transition-colors duration-150"
-                  style={{ background: 'var(--bg-dropdown)', border: '1px solid var(--border-default)' }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(79,70,229,0.3)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-default)'}>
-                  <p.Icon size={24} weight="duotone" color="#4F46E5" className="mb-3" />
-                  <p className="text-[15px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>{p.role}</p>
-                  <p className="font-num text-[20px] font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{p.salary}</p>
-                  <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}><span className="font-num">{p.vacancies}</span> вакансий</p>
-                </div>
-              ))}
+                { role: 'Бариста', salary: '42 000 ₽', vacancies: '1 200', Icon: Coffee, href: '#/profession' },
+                { role: 'Управляющий', salary: '68 000 ₽', vacancies: '340', Icon: Users, href: null },
+                { role: 'Кондитер', salary: '48 000 ₽', vacancies: '890', Icon: Storefront, href: null },
+              ].map(p => {
+                const Wrapper = p.href ? 'a' : 'div'
+                const wrapperProps = p.href ? { href: p.href } : {}
+                return (
+                  <Wrapper key={p.role} {...wrapperProps}
+                    className="p-4 rounded-[8px] transition-colors duration-150 block"
+                    style={{ background: 'var(--bg-dropdown)', border: '1px solid var(--border-default)', cursor: p.href ? 'pointer' : 'default' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = p.href ? 'rgba(79,70,229,0.3)' : 'var(--border-default)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-default)'}>
+                    <p.Icon size={24} weight="duotone" color="#4F46E5" className="mb-3" />
+                    <p className="text-[15px] font-medium mb-1" style={{ color: 'var(--text-primary)' }}>{p.role}</p>
+                    <p className="font-num text-[20px] font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{p.salary}</p>
+                    <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}><span className="font-num">{p.vacancies}</span> вакансий</p>
+                    {p.href && <p className="text-[12px] mt-2" style={{ color: '#818CF8' }}>Открыть профессию →</p>}
+                  </Wrapper>
+                )
+              })}
             </div>
             <Source>HeadHunter · апрель 2026</Source>
           </Card>
@@ -1212,12 +923,18 @@ export default function App() {
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={DEMAND_DATA.slice(-12)}>
+              <defs>
+                <linearGradient id="demandFillModal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#818CF8" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <XAxis dataKey="m" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} width={45}
                 tickFormatter={v => (v / 1000).toFixed(0) + 'К'} />
               <Tooltip content={<DemandTooltip />} />
               <Area type="monotone" dataKey="v" stroke="#818CF8" strokeWidth={2}
-                fill="url(#demandFill)" dot={false} isAnimationActive={false} />
+                fill="url(#demandFillModal)" dot={false} isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -1261,8 +978,13 @@ export default function App() {
         <Source>HeadHunter · апрель 2026</Source>
       </Modal>
 
-      <SlideInEmail visible={slideEmail && !emailDismissed} onClose={() => setEmailDismissed(true)} />
-      <MobileStickyCTA visible={mobileCTA && isMobile} />
+      <SlideInEmail
+        visible={slideEmail && !emailDismissed}
+        onClose={() => setEmailDismissed(true)}
+        title="Не упустите изменения"
+        body="Ежемесячный отчёт: спрос, конкуренты, зарплаты"
+      />
+      <MobileStickyCTA visible={mobileCTA && isMobile} text="Проверить идею" sub="Бесплатно" />
     </div>
   )
 }
